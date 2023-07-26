@@ -31,17 +31,19 @@ The first return value is a DataFrame, where rows are genes and columns are stat
 
 
 ```julia
-julia> pathway_AUC_main(use_testdata = "yes")
-  1.596892 seconds (8.44 M allocations: 279.657 MiB, 4.75% gc time, 76.64% compilation time)
+julia> result
+  1.595452 seconds (8.44 M allocations: 279.644 MiB, 4.83% gc time, 77.52% compilation time)
 [ Info: INFO: The size of expression profile was (36602, 8).
-  1.990754 seconds (4.95 M allocations: 260.557 MiB, 13.15% gc time, 98.11% compilation time)
+  1.945127 seconds (4.95 M allocations: 260.557 MiB, 11.17% gc time, 96.92% compilation time)
 [ Info: INFO: The filtered of expression profile size was (7549, 8).
-  0.000337 seconds (27 allocations: 34.672 KiB)
+  0.000401 seconds (27 allocations: 34.641 KiB)
 [ Info: INFO: There are 1 pathways to be analyzed.
-  0.794688 seconds (1.50 M allocations: 99.943 MiB, 3.73% gc time, 93.88% compilation time)
-2×5 Matrix{Any}:
- "pathways_name"                     ["cluster1"]                                                                                                       …  ["t"]      ["pvalue"]
- "HALLMARK_TNFA_SIGNALING_VIA_NFKB"  Any["AAACCCAAGGGTTAAT-1", "AAACCCAAGAAACCAT-1", "AAACCCAAGCAACAAT-1", "AAACCCAAGCCAGAGT-1", "AAACCCACAGCAGATG-1"]     [4.92654]  [0.00263937] 
+  0.660084 seconds (1.75 M allocations: 87.597 MiB, 3.11% gc time, 99.78% compilation time)
+[ Info: INFO: According to the meta information, there are 2 groups of data and each group will be analyzed with the rest of the sample.
+  2.731819 seconds (6.61 M allocations: 365.662 MiB, 3.77% gc time, 94.64% compilation time)
+2×17 Matrix{Any}:
+ "GeneSet"                            "group1"   "group1"   "group1"   "group1"   "group1"  …   "group2"   "group2"   "group2"   "group2"   "group2"   "group2"   "group2"   "group2"
+ "HALLMARK_TNFA_SIGNALING_VIA_NFKB"  0.506962   0.500821   0.515332   0.529347   0.453294      0.506962   0.500821   0.515332   0.529347   0.453294   0.512858   0.482078   0.440029
 ```
 
 #### 1.2.2 Run your own AUCell analysis
@@ -93,7 +95,7 @@ pathway_AUC_main("matrix.mtx",
      file_format_feature = "read_gmt",
         fn_feature_delim = ' ',
     use_HALLMARK_pathway = "no",
-                	mode = "pathway_recluster",
+                	mode = "AUCell",
            ncell_pseudo: = 0,
          auc_x_threshold = 1.0,
             remove_zeros = true,
@@ -122,30 +124,30 @@ julia> pathway_AUC_main("matrix.mtx",
 
 Below lists the optional keyword parameters and their default values.
 
-| Parameter            | Parameter types | Default value       | Parameters to describe                                       |
-| -------------------- | --------------- | ------------------- | ------------------------------------------------------------ |
-| fn_expr              | AbstractString  | "matrix.mtx"        | MTX file path. (required).                                   |
-| rn_expr              | AbstractString  | "features.tsv"      | features file path. (required)                               |
-| cn_expr              | AbstractString  | "barcodes.tsv"      | barcodes file path. (required)                               |
-| fn_feature           | AbstractString  | "fn_feature.gmt"    |                                                              |
-| fn_meta              | AbstractString  | "fn_meta.txt"       | Grouping information file path. Read in a meta data file with the first row assumed to be the header and the row names assumed to be the profile names (cell barcodes). |
-| fn_meta_delim        | AbstractChar    | '\t'                | Delimiter of the metadata file data.                         |
-| fn_meta_group        | AbstractString  | "group"             | Grouping information is specified by the column with the header name of `group`. If `group` is not found, the second column will be used. |
-| file_format_expr     | AbstractString  | "read_mtx"          | There are two input modes "read_mtx" and "read_expr_matrix" for the expression profile file format. |
-| T                    | Type            | Int32               | Express the storage format of the spectrum input variable.   |
-| feature_col          | Int             | 2                   | feature in the column.                                       |
-| barcode_col          | Int             | 1                   | barcode in the column.                                       |
-| feature_threshold    | Int             | 30                  | Include features (genes) detected in at least this many cells. |
-| cell_threshold       | Int             | 200                 | Include profiles (cells) where at least this many features are detected. |
-| file_format_feature  | AbstractString  | "read_gmt"          | There are two input modes "read_gmt" and "read_gsf" for the file format of the features contained in the pathways. |
-| fn_feature_delim     | AbstractChar    | ' '                 | Delimiter of the pathway features file data.                 |
-| use_HALLMARK_pathway | AbstractString  | "no"                | Whether to use the built-in HALLMARK pathways.               |
-| mode                 | AbstractString  | "pathway_recluster" | "pathway_recluster" is subgroups based on pathway activation. "aucell" is an optional mode to calculate AUC based on characteristic genes for two groups. |
-| ncell_pseudo         | Int             | 0                   | ncell_pseudo is the number of pseudobulk combined cells in each group. By default, profiling does not use the pseudo-bulk method (`n_pseudo = 0`). 0 indicates that the pseudo-bulk mode is not used, and other values indicate how many cells are merged into a sample. |
-| auc_x_threshold      | Float64         | 1.0                 | Threshold for the X-axis (1-specificity) in the auc calculation, 0~auc_x_threshold. |
-| remove_zeros         | Bool            | true                | Whether to remove all cells with zero gene expression values. |
-| work_dir             | AbstractString  | "./"                | Working Directory.                                           |
-| use_testdata         | AbstractString  | "no"                | Whether to use the default provided test data for analysis, yes or no. |
+| Parameter            | Parameter types | Default value    | Parameters to describe                                       |
+| -------------------- | --------------- | ---------------- | ------------------------------------------------------------ |
+| fn_expr              | AbstractString  | "matrix.mtx"     | MTX file path. (required).                                   |
+| rn_expr              | AbstractString  | "features.tsv"   | features file path. (required)                               |
+| cn_expr              | AbstractString  | "barcodes.tsv"   | barcodes file path. (required)                               |
+| fn_feature           | AbstractString  | "fn_feature.gmt" |                                                              |
+| fn_meta              | AbstractString  | "fn_meta.txt"    | Grouping information file path. Read in a meta data file with the first row assumed to be the header and the row names assumed to be the profile names (cell barcodes). |
+| fn_meta_delim        | AbstractChar    | '\t'             | Delimiter of the metadata file data.                         |
+| fn_meta_group        | AbstractString  | "group"          | Grouping information is specified by the column with the header name of `group`. If `group` is not found, the second column will be used. |
+| file_format_expr     | AbstractString  | "read_mtx"       | There are two input modes "read_mtx" and "read_expr_matrix" for the expression profile file format. |
+| T                    | Type            | Int32            | Express the storage format of the spectrum input variable.   |
+| feature_col          | Int             | 2                | feature in the column.                                       |
+| barcode_col          | Int             | 1                | barcode in the column.                                       |
+| feature_threshold    | Int             | 30               | Include features (genes) detected in at least this many cells. |
+| cell_threshold       | Int             | 200              | Include profiles (cells) where at least this many features are detected. |
+| file_format_feature  | AbstractString  | "read_gmt"       | There are two input modes "read_gmt" and "read_gsf" for the file format of the features contained in the pathways. |
+| fn_feature_delim     | AbstractChar    | ' '              | Delimiter of the pathway features file data.                 |
+| use_HALLMARK_pathway | AbstractString  | "no"             | Whether to use the built-in HALLMARK pathways.               |
+| mode                 | AbstractString  | "AUCell"         | "AUCell" is an optional mode to calculate AUC based on characteristic genes for two groups. "pathway_recluster" is subgroups based on pathway activation. |
+| ncell_pseudo         | Int             | 0                | ncell_pseudo is the number of pseudobulk combined cells in each group. By default, profiling does not use the pseudo-bulk method (`n_pseudo = 0`). 0 indicates that the pseudo-bulk mode is not used, and other values indicate how many cells are merged into a sample. |
+| auc_x_threshold      | Float64         | 1.0              | Threshold for the X-axis (1-specificity) in the auc calculation, 0~auc_x_threshold. |
+| remove_zeros         | Bool            | true             | Whether to remove all cells with zero gene expression values. |
+| work_dir             | AbstractString  | "./"             | Working Directory.                                           |
+| use_testdata         | AbstractString  | "no"             | Whether to use the default provided test data for analysis, yes or no. |
 
 
 
@@ -181,34 +183,13 @@ Below lists the optional keyword parameters and their default values.
 
 #### 1.4.1 result
 
-- The expression profile of the ctrl group (after preprocessing).  (See [fn_metadata.txt](https://github.com/yanjer/RankCompV3.jl/blob/master/test/fn_metadata.txt))
+- The file content is the pathways AUC value for each group sample. Behavioral pathways, listed as samples  (See )
 
-- The expression profile of the treat group (after preprocessing).  (See [fn_expr_treat.tsv](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_treat.tsv))
-
-- This file contains Name, pval, padj, n11, n12, n13, n21, n22, n23, n31, n32, n33, Δ1, Δ2, se, z1.  (See [fn_expr_result.tsv](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_result.tsv))
-
-- Graph of Distribution of Expression Values.  (See [fn_expr_expr_dist.pdf](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_expr_dist.pdf))
-
-- Heat maps of expression values for the ctrl and treat groups.  (See [fn_expr_expr_heat.pdf](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_expr_heat.pdf))
-
-- Distribution of parameters in 3 x 3 contingency tables.  (See [fn_expr_contigency_table.pdf](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_contigency_table.pdf))
-
-- Delta distribution.  (See [fn_expr_delta_value.pdf](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_delta_value.pdf))
-
-- Distribution of Standard Error (SE).  (See [fn_expr_se.pdf](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_se.pdf))
-
-- Distribution of z1.  (See [fn_expr_z1.pdf](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_z1.pdf))
-
-- Distribution of p and FDR values.  (See [fn_expr_p_value.pdf](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_p_value.pdf))
-
-- Distribution of expression values for DEGs.  (See [fn_expr_degs_expr_dist.pdf](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_degs_expr_dist.pdf))
-
-- Heat map of the expression values of DEGs in the ctrl and treat groups.  (See [fn_expr_degs_expr_heat.pdf](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/fn_expr_degs_expr_heat.pdf))
 
 
 #### 1.4.2 log file
 
-- [RankCompV3-test-data-output.log](https://github.com/yanjer/RankCompV3-test-data-output/blob/master/RankCompV3-test-data-output/RankCompV3_test_data_output.log)
+- [aucell_result.tsv](https://github.com/yanjer/testdata-output/blob/master/AUCell_testdata_output/aucell_result.tsv)
 
 ## 2 Used in the R language
 
