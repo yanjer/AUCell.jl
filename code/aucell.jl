@@ -64,3 +64,55 @@ function aucell_kernel(
 	end
 end
 
+
+"""
+    cell_marker_score(mat, features, barcodes, gene_set, group)
+
+Given a single-cell RNA expression matrix `mat` with row-names of `features` and column-names of `barcodes`, calculate the relative cell type marker scores (0-1) for the ` gene_set`; the grouping information is specified in the `group` (vector of vectors, which store the cell barcodes in each group).
+
+# Examples
+```jldoctest
+
+julia> mat = rand(0:32, 12, 8)
+
+julia> features = 1:12
+
+julia> gene_set = [1,5,6,8]
+
+julia> barcodes = ["a", "b", "c", "d", "e", "f", "g", "h"]
+
+julia> group = [["a", "b", "g", "h"], ["c", "d", "e", "f"]]
+2-element Vector{Vector{String}}:
+ ["a", "b", "g", "h"]
+ ["c", "d", "e", "f"]
+
+julia> cell_marker_score(mat, features, barcodes, gene_set, group)
+4 genes are found among 4 genes.
+1×2 Matrix{Float64}:
+ 0.476227  0.523773
+
+```
+"""
+function cell_marker_score(
+		mat::AbstractMatrix, # Expression profiles matrix 
+		features::AbstractVector, # Row names for the profiles
+		bar::AbstractVector, # Row names for the profiles
+		gene_set::AbstractVector, # A set of cell-specific genes (expressed only in certain kind of cells, or upregulated)
+		group::AbstractVector
+	)
+	r, c = size(mat)
+	r == length(features) ||  throw(DimensionMismatch("`mat` and `features` do not have equal number of rows."))
+	c == length(bar)    ||  throw(DimensionMismatch("`mat` and `bar` do not have equal number of columns."))
+	gen = unique(gene_set)
+	ind = filter(.!=(nothing), indexin(gen, features))
+	isnothing(ind) && throw("None of marker genes are found in the features.")
+	dat = mat[ind,:]
+	println(size(dat, 1), " genes are found among ", length(gen), " genes.")
+	if size(dat,1) == 0
+		return zeros(Float64, 1, length(group))
+	else
+		res = mapreduce(i -> mean(dat[:, filter(.!=(nothing),indexin(i, bar))], dims=2), hcat, group)
+		res = mapslices(x -> (sum(x) == 0 ? normalize(x .+ 1) : normalize(x, 1)), res, dims = 2)
+		return normalize(sum(res, dims = 1), 1)
+	end
+end
