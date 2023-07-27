@@ -58,6 +58,7 @@ function pathway_AUC_main(fn_expr::AbstractString = "matrix.mtx",
                                           T::Type = Int32,
                                  feature_col::Int = 2,
                                  barcode_col::Int = 1,
+                          rem_delim::AbstractChar = ' ',
                            feature_threshold::Int = 30, # Include features (genes) detected in at least this many cells
                               cell_threshold::Int = 200, # Include profiles (cells) where at least this many features are detected
               file_format_feature::AbstractString = "read_gmt", # There are two input modes "read_gmt" and "read_gsf" for the file format of the features contained in the pathways.
@@ -80,7 +81,7 @@ function pathway_AUC_main(fn_expr::AbstractString = "matrix.mtx",
         cell_threshold = 1
     end
     (use_HALLMARK_pathway == "yes") ? fn_feature = joinpath(@__DIR__, "..", "HALLMARK_pathway", "h_all_v2023_1_Hs_symbols.gmt") : fn_feature
-    @time mat, fea, bar = (file_format_expr == "read_mtx") ? read_mtx(fn_expr, rn_expr, cn_expr; T, feature_col, barcode_col) : read_expr_matrix(fn_expr, rn_expr, cn_expr)
+    @time mat, fea, bar = (file_format_expr == "read_mtx") ? read_mtx(fn_expr, rn_expr, cn_expr; T, feature_col, barcode_col) : read_expr_matrix(fn_expr, rn_expr, cn_expr; matrix_delim = rem_delim)
     @info "INFO: The size of expression profile was $(size(mat))."
     @time mat, kf, kb = filter_expr_matrix(mat, feature_threshold, cell_threshold)
     @info "INFO: The filtered of expression profile size was $(size(mat))."
