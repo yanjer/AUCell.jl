@@ -1,22 +1,22 @@
 module AUCell
 
 export pathway_AUC_main,
-       auc_pathway_recluster_kernel, aucell_kernel,
+       reAUCluster_kernel, aucell_kernel,
        filter_expr_matrix,
        read_mtx, read_gmt, read_meta
 
-include(joinpath(@__DIR__, "..", "code", "read_file.jl"))
+include(joinpath(@__DIR__, "code", "read_file.jl"))
 
-include(joinpath(@__DIR__, "..", "code", "process_expr.jl"))
+include(joinpath(@__DIR__, "code", "process_expr.jl"))
 
-include(joinpath(@__DIR__, "..", "code", "auc_pathway_recluster.jl"))
+include(joinpath(@__DIR__, "code", "auc_pathway_recluster.jl"))
 
-include(joinpath(@__DIR__, "..", "code", "aucell.jl"))
+include(joinpath(@__DIR__, "code", "aucell.jl"))
 
 """
 
 # Examples
-## default: pathway_recluster mode
+## default: reAUCluster mode
 ```jldoctest
 julia> pathway_AUC_main(use_testdata = "yes")
 1.632442 seconds (8.44 M allocations: 279.642 MiB, 7.95% gc time, 73.87% compilation time)
@@ -63,8 +63,8 @@ function pathway_AUC_main(fn_expr::AbstractString = "matrix.mtx",
                               cell_threshold::Int = 200, # Include profiles (cells) where at least this many features are detected
               file_format_feature::AbstractString = "read_gmt", # There are two input modes "read_gmt" and "read_gsf" for the file format of the features contained in the pathways.
                    fn_feature_delim::AbstractChar = ' ',
-             use_HALLMARK_pathway::AbstractString = "no",
-                             mode::AbstractString = "pathway_recluster",   # "pathway_recluster" is subgroups based on pathway activation. "aucell" is an optional mode to calculate AUC based on characteristic genes for two groups. 
+            #  use_HALLMARK_pathway::AbstractString = "no",
+                             mode::AbstractString = "reAUCluster",   # "reAUCluster" is subgroups based on pathway activation. "aucell" is an optional mode to calculate AUC based on characteristic genes for two groups. 
                                 ncell_pseudo::Int = 0, # ncell_pseudo is the number of pseudobulk combined cells in each group
                          auc_x_threshold::Float64 = 1.0,
                                remove_zeros::Bool = true,
@@ -80,7 +80,7 @@ function pathway_AUC_main(fn_expr::AbstractString = "matrix.mtx",
         feature_threshold = 1
         cell_threshold = 1
     end
-    (use_HALLMARK_pathway == "yes") ? fn_feature = joinpath(@__DIR__, "..", "HALLMARK_pathway", "h_all_v2023_1_Hs_symbols.gmt") : fn_feature
+    # (use_HALLMARK_pathway == "yes") ? fn_feature = joinpath(@__DIR__, "..", "HALLMARK_pathway", "h_all_v2023_1_Hs_symbols.gmt") : fn_feature
     @time mat, fea, bar = (file_format_expr == "read_mtx") ? read_mtx(fn_expr, rn_expr, cn_expr; T, feature_col, barcode_col) : read_expr_matrix(fn_expr, rn_expr, cn_expr; matrix_delim = rem_delim)
     @info "INFO: The size of expression profile was $(size(mat))."
     @time mat, kf, kb = filter_expr_matrix(mat, feature_threshold, cell_threshold)
@@ -89,14 +89,14 @@ function pathway_AUC_main(fn_expr::AbstractString = "matrix.mtx",
     bar = bar[kb]
     @time pathway_name, pathway_genes = (file_format_feature == "read_gmt") ? read_gmt(fn_feature) : read_gsf(fn_feature; delim = fn_feature_delim)
     @info "INFO: There are $(length(pathway_name)) pathways to be analyzed."
-    if mode == "pathway_recluster"
+    if mode == "reAUCluster"
         # 重分簇的结果，第一列为通路，第二列为重分簇1，第三列为重分簇2，，第四列为配对t检验t值，第五列为配对t检验p值，第六列为各样本的AUC值（顺序按照表达谱样本顺序）
-        recluster_bar = auc_pathway_recluster_kernel(mat, fea, bar, pathway_genes; np = ncell_pseudo, remove_zeros = remove_zeros)
+        recluster_bar = reAUCluster_kernel(mat, fea, bar, pathway_genes; np = ncell_pseudo, remove_zeros = remove_zeros)
         # 存储重分簇的结果，第一列为通路，第二列为重分簇1，第三列为重分簇2，第四列为配对t检验t值，第五列为配对t检验p值
         recluster_bar = vcat(hcat("pathways_name",[[["cluster1"]] [["cluster2"]] [["t"]] [["pvalue"]] [["sample1","sample2","sample3"]]]),hcat(pathway_name,recluster_bar))
-        writedlm("pathway_recluster_column.tsv", recluster_bar[:,1:5], "\t")
+        writedlm("reAUCluster_result.tsv", recluster_bar[:,1:5], "\t")
         #存储各样本在各通路中的AUC，行为通路，列为样本
-        writedlm("pathway_recluster_column.tsv", recluster_bar[:,[:,setdiff([1:end]...,[2:end-1]...)]], "\t")
+        writedlm("reAUCluster_AUC.tsv", recluster_bar[:,[:,setdiff([1:end]...,[2:end-1]...)]], "\t")
         return recluster_bar[:,1:5]
     else
         @time grp, nam = read_meta(fn_meta, fn_meta_group; delim = fn_meta_delim)

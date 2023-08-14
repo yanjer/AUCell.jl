@@ -1,10 +1,10 @@
-export auc_pathway_recluster_kernel
+export reAUCluster_kernel
 
 using Random, DelimitedFiles, SparseArrays, HypothesisTests
 
-include(joinpath(@__DIR__, "..", "code", "roc.jl"))
+include(joinpath(@__DIR__, "code", "roc.jl"))
 
-include(joinpath(@__DIR__, "..", "code", "process_expr.jl"))
+include(joinpath(@__DIR__, "code", "process_expr.jl"))
 
 function cluster_inter_auc(nmat::AbstractMatrix,
                           group_cell::Vector{Int64},
@@ -113,7 +113,7 @@ function mode_pathway_cluster(nmat::AbstractMatrix,
     end
 end
 
-function auc_pathway_recluster_kernel(
+function reAUCluster_kernel(
 		mat::AbstractMatrix, # Expression profiles matrix 
 		features::AbstractVector, # Row names for the profiles
         barcodes::AbstractVector, # Col names for the profiles
