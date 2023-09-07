@@ -1,6 +1,6 @@
-# AUCell
+# AUCell.jl
 
-APRC is an algorithm for cell reclassification based on AUC values by feature genes in the pathway.
+AUC.jl is an algorithm for cell reclassification based on AUC values by feature genes in the pathway.
 
 ## 1 Used in the Julia language
 
