@@ -1,5 +1,27 @@
-export roc_kernel
+"""
+    splitby(A::AbstractVector, by)
 
+Split a vector into subsets by a function `by` which takes two consective elements in `A`. The vector is splited at  where `by` returns `false`.
+
+Returns a vector of subsets (iteration indices to `A`).
+
+"""
+function splitby(A::AbstractVector, by)
+    n = length(A)
+    n > 2 || error("A must have more than 2 elements.")
+    res = []
+    cur = [1]
+    for i in 2:length(A)
+        if by(A[i], A[i-1])
+            push!(cur, i)
+        else
+            push!(res, cur)
+            cur = [i]
+        end 
+    end 
+    push!(res, cur)
+    return res
+end 
 
 #y-axis:   Sensitivity, TPR: TP/(TP+FN)
 #x-axis:  1-Specificity, FPR: FP/(TN+FP)
@@ -55,6 +77,7 @@ x=	1.0	y=	1.0
 - `verbose::Bool = false`: the verbosity of output.
 
 """
+
 function roc_kernel(
 					scores::AbstractVector, # Scores for each sample
 			     positives::BitVector; # Whether a sample is a positive, (1 true, 0 false) 
@@ -65,18 +88,26 @@ function roc_kernel(
 			)
 	n = length(scores)
 	n == length(positives) ||  throw(DimensionMismatch("'scores' and 'positives' do not have equal number of rows."))
-	m = sum(positives)   # total number of true positives
-	o = sortperm(scores, rev = decreasing)
-	tp = cumsum(positives[o]) # True positives
-	# TP + FP = 1:n
-	fp = (1:n) .- tp  # False positives
+	#tp = cumsum(positives[o]) # True positives
+	# TP + FP: = 1:n
+	#fp = (1:n) .- tp  # False positives
 	# TP + FN = m 
 	#/ fn = m .- fp 
 	# FN + TN = n .- (1:n)
 	#/ tn = (n - m) .- tp
+	m = sum(positives)   # total number of true positives
+	o = sortperm(scores, rev = decreasing) #Tied-rank issue.
+	scores_o = scores[o]
+	pos_o    = positives[o]
+	scores_i = splitby(scores_o, ==)
+	tp = map(i->sum(pos_o[i]), scores_i)
+	fp = length.(scores_i) .- tp
+	tp = cumsum(tp)
+	fp = cumsum(fp)
 	y  = vcat([0], (1/m) .* tp)
 	x  = vcat([0], (1/(n-m)) .* fp)
-	ind= vcat([true], (x[1:n] .!= x[2:n+1]))
+	rev_x = reverse(x)
+	ind = reverse(vcat([true], (rev_x[1:end-1] .!= rev_x[2:end])))
 	x = x[ind]
 	y = y[ind]
 	a  = vcat([0], 0.5 * (diff(x) .* (y[1:end-1] .+ y[2:end]))) # Area under each interval
