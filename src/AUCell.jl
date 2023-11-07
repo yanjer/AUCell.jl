@@ -1,5 +1,7 @@
 module AUCell
 
+using Random, DelimitedFiles, SparseArrays, HypothesisTests, LinearAlgebra
+
 export pathway_AUC_main,
        reAUCluster_kernel, aucell_kernel,
        filter_expr_matrix,

@@ -1,6 +1,6 @@
 export reAUCluster_kernel
 
-using Random, DelimitedFiles, SparseArrays, HypothesisTests
+using Random, DelimitedFiles, SparseArrays, HypothesisTests, LinearAlgebra
 
 include("roc.jl")
 

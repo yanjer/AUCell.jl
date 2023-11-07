@@ -1,5 +1,7 @@
 export filter_expr_matrix, generate_pseudobulk
 
+using Random, DelimitedFiles, SparseArrays, HypothesisTests, LinearAlgebra
+
 """
 	filter_expr_matrix(mat, feature_threshold, cell_threshold)
 
