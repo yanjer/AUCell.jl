@@ -1,6 +1,6 @@
 # AUCell.jl
 
-AUC.jl is an algorithm for cell reclassification based on AUC values by feature genes in the pathway.
+AUCell.jl is an algorithm for cell reclassification based on AUC values by feature genes in the pathway.
 
 ## 1 Used in the Julia language
 
