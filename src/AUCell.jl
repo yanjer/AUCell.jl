@@ -5,13 +5,13 @@ export pathway_AUC_main,
        filter_expr_matrix,
        read_mtx, read_gmt, read_meta
 
-include(joinpath(@__DIR__, "code", "read_file.jl"))
+include("code/read_file.jl")
 
-include(joinpath(@__DIR__, "code", "process_expr.jl"))
+include("code/process_expr.jl")
 
-include(joinpath(@__DIR__, "code", "auc_pathway_recluster.jl"))
+include("code/auc_pathway_recluster.jl")
 
-include(joinpath(@__DIR__, "code", "aucell.jl"))
+include("code/aucell.jl")
 
 """
 

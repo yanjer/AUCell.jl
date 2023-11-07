@@ -2,9 +2,9 @@ export reAUCluster_kernel
 
 using Random, DelimitedFiles, SparseArrays, HypothesisTests
 
-include(joinpath(@__DIR__, "code", "roc.jl"))
+include("roc.jl")
 
-include(joinpath(@__DIR__, "code", "process_expr.jl"))
+include("process_expr.jl")
 
 function cluster_inter_auc(nmat::AbstractMatrix,
                           group_cell::Vector{Int64},

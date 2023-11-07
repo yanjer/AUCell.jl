@@ -2,9 +2,9 @@ export aucell_kernel
 
 using Random, DelimitedFiles, SparseArrays
 
-include(joinpath(@__DIR__, "code", "process_expr.jl"))
+include("process_expr.jl")
 
-include(joinpath(@__DIR__, "code", "roc.jl"))
+include("roc.jl")
 
 """
     aucell_kernel(mat, features, gene_set)
