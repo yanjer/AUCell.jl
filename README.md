@@ -10,7 +10,7 @@ The algorithm is implemented in Julia. Version 1.7 or later is recommended. The 
 
 ```julia
 using Pkg
-Pkg.add("AUCell")
+Pkg.add("AUCell.jl")
 ```
 
 ### 1.2 Examples
